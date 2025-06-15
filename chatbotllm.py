@@ -64,7 +64,7 @@ if not OPENAI_API_KEY:
     st.stop()
 
 # --- Client OpenAI v1 ---
-db_client = OpenAI(api_key=OPENAI_API_KEY)
+db_client = OpenAI(api_key=OPENAI_API_KEY , timeout=30)
 
 # --- Modèle d'embeddings multilingue ---
 try:
