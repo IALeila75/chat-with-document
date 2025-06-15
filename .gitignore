@@ -1,0 +1,13 @@
+# Clé API
+.env
+
+# Environnements virtuels
+venv/
+.venv/
+
+# Caches d’embeddings et d’index FAISS
+*.emb.npy
+*.idx
+
+# Cache Streamlit
+.streamlit/
