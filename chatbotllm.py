@@ -79,7 +79,7 @@ def clean_text(text, min_word_length: int = 4) -> str:
 load_dotenv(dotenv_path=".env")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
-    st.error("🔑 Veuillez définir OPENAI_API_KEY dans .env à la racine du projet.")
+    st.error(" Veuillez définir OPENAI_API_KEY dans .env à la racine du projet.")
     st.stop()
 
 # --- Client OpenAI v1 ---
@@ -93,22 +93,7 @@ except Exception as e:
     st.stop()
 
 # --- Pipelines Transformers locaux ---
-try:
-    summarizer = pipeline(
-        "summarization",
-        model="facebook/bart-large-cnn",
-        tokenizer="facebook/bart-large-cnn"
-    )
-    gen_s2s = pipeline(
-        "text2text-generation",
-        model="google/flan-t5-small",
-        tokenizer="google/flan-t5-small"
-    )
-    qa_pipeline = pipeline(
-        "question-answering",
-        model="distilbert-base-cased-distilled-squad",
-        tokenizer="distilbert-base-cased-distilled-squad"
-    )
+
 except Exception as e:
     st.error(f"❌ Impossible d'initialiser les pipelines Transformers : {e}")
     st.stop()
@@ -257,6 +242,42 @@ elif page == "Chatbot":
     # Vérifie qu'on a bien construit l'index et les chunks
     if 'faiss_index' in st.session_state and 'chunks' in st.session_state:
         query = st.text_input("Posez une question ou tapez 'résumé' pour un résumé :")
+        # Juste avant de traiter la query, chargez à la volée si USE_LOCAL_MODELS
+        if USE_LOCAL_MODELS:
+            from transformers import pipeline
+            summarizer = pipeline(
+                "summarization",
+                model="facebook/bart-large-cnn",
+                tokenizer="facebook/bart-large-cnn",
+                local_files_only=True
+            )
+            gen_s2s = pipeline(
+                "text2text-generation",
+                model="google/flan-t5-small",
+                tokenizer="google/flan-t5-small",
+                local_files_only=True
+            )
+            qa_pipeline = pipeline(
+                "question-answering",
+                model="distilbert-base-cased-distilled-squad",
+                tokenizer="distilbert-base-cased-distilled-squad",
+                local_files_only=True
+            )
+        else:
+            summarizer = gen_s2s = qa_pipeline = None
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         if query:
             # 1) Embedding de la requête
             q_emb = np.array(
@@ -274,7 +295,7 @@ elif page == "Chatbot":
 
             # 4a) Cas résumé
             if is_summary:
-                st.info("📝 Résumé détecté — utilisation du summarizer…")
+                st.info(" Résumé détecté ")
                 try:
                     summary = summarizer(
                         context,
@@ -289,7 +310,7 @@ elif page == "Chatbot":
 
             # 4b) Cas question factuelle (QA)
             elif is_factual:
-                st.info("❓ Question factuelle — utilisation du pipeline QA…")
+                st.info(" Question factuelle — utilisation du pipeline QA…")
                 try:
                     ans = qa_pipeline(question=query, context=context)
                     st.text_area("Réponse (QA local)", ans["answer"].strip(), height=200)
@@ -298,7 +319,7 @@ elif page == "Chatbot":
 
             # 4c) Cas génération libre (génératif)
             else:
-                st.info("🤖 Réponse libre — utilisation de la génération text2text…")
+                st.info(" Réponse libre — utilisation de la génération text2text…")
                 try:
                     gen_input = (
                         "Voici un extrait de votre document :\n"
@@ -316,4 +337,4 @@ elif page == "Chatbot":
                 except Exception as e:
                     st.error(f"❌ Erreur lors de la génération locale : {e}")
     else:
-        st.info("🔄 Construisez d'abord l'index RAG sur la page « Visualisation ».")
+        st.info(" Construisez d'abord l'index RAG sur la page « Visualisation ».")
