@@ -23,6 +23,11 @@ import spacy
 from wordcloud import STOPWORDS
 
 
+import re, string, streamlit as st
+from wordcloud import STOPWORDS
+from collections import Counter
+
+
 USE_LOCAL = os.getenv("USE_LOCAL_MODELS", "false").lower() == "true"
 summarizer = gen_s2s = qa_pipeline = None
 
@@ -249,20 +254,27 @@ elif page == "Visualisation":
 # --- Page : Chatbot ---
 elif page == "Chatbot":
     st.header("Chat avec votre PDF")
+    # Vérifie qu'on a bien construit l'index et les chunks
     if 'faiss_index' in st.session_state and 'chunks' in st.session_state:
         query = st.text_input("Posez une question ou tapez 'résumé' pour un résumé :")
         if query:
-            # Embedding de la requête
+            # 1) Embedding de la requête
             q_emb = np.array(
                 embed_model.encode([query], show_progress_bar=False),
                 dtype=np.float32
             ).reshape(1, -1)
-            D, I = st.session_state['faiss_index'].search(q_emb, k=5)
-            context = "\n\n".join(st.session_state['chunks'][i] for i in I[0])
+            # 2) Recherche des chunks pertinents
+            D, indices = st.session_state['faiss_index'].search(q_emb, k=5)
+            context = "\n\n".join(st.session_state['chunks'][i] for i in indices[0])
 
-            # Si on demande un résumé
-            if query.strip().lower().startswith("résumé"):
-                st.info(" Génération du résumé en local…")
+            # 3) Détection du type de question
+            lower_q = query.strip().lower()
+            is_summary = any(tok in lower_q for tok in ["résumé", "idée générale", "points clés"])
+            is_factual = lower_q.split()[0] in ["qui", "quoi", "quand", "où", "comment", "pourquoi"] or query.strip().endswith("?")
+
+            # 4a) Cas résumé
+            if is_summary:
+                st.info("📝 Résumé détecté — utilisation du summarizer…")
                 try:
                     summary = summarizer(
                         context,
@@ -273,28 +285,35 @@ elif page == "Chatbot":
                     )[0]["summary_text"].strip()
                     st.text_area("Résumé (local)", summary, height=200)
                 except Exception as e:
-                    st.error(f"❌ Erreur résumé local : {e}")
+                    st.error(f"❌ Erreur lors de la génération du résumé : {e}")
 
-            # Sinon, génération locale de réponse
+            # 4b) Cas question factuelle (QA)
+            elif is_factual:
+                st.info("❓ Question factuelle — utilisation du pipeline QA…")
+                try:
+                    ans = qa_pipeline(question=query, context=context)
+                    st.text_area("Réponse (QA local)", ans["answer"].strip(), height=200)
+                except Exception as e:
+                    st.error(f"❌ Erreur lors de la QA locale : {e}")
+
+            # 4c) Cas génération libre (génératif)
             else:
-                st.info(" Génération de réponse locale…")
+                st.info("🤖 Réponse libre — utilisation de la génération text2text…")
                 try:
                     gen_input = (
-                        "Contexte :\n" + context +
-                        "\n\nQuestion : " + query +
-                        "\nRéponse :"
+                        "Voici un extrait de votre document :\n"
+                        f"{context}\n\n"
+                        "Question : " + query + "\n"
+                        "Réponse :"
                     )
                     generated = gen_s2s(
                         gen_input,
                         max_length=150,
-                        do_sample=False
+                        do_sample=False,
+                        truncation=True
                     )[0]["generated_text"].strip()
                     st.text_area("Réponse (local génératif)", generated, height=200)
                 except Exception as e:
-                    st.error(f"❌ Erreur génération locale : {e}")
+                    st.error(f"❌ Erreur lors de la génération locale : {e}")
     else:
-        st.info("Construisez d'abord l'index local sur la page « Visualisation ».")
-
-# --- Footer ---
-st.sidebar.markdown("---")
-st.sidebar.markdown("*Streamlit PDF Chatbot & Viz Demo*")
+        st.info("🔄 Construisez d'abord l'index RAG sur la page « Visualisation ».")
