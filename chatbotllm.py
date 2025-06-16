@@ -22,6 +22,26 @@ import string
 import spacy
 from wordcloud import STOPWORDS
 
+
+USE_LOCAL = os.getenv("USE_LOCAL_MODELS", "false").lower() == "true"
+summarizer = gen_s2s = qa_pipeline = None
+
+# … plus bas, dans la section Chatbot …
+if USE_LOCAL:
+    from transformers import pipeline
+    summarizer = pipeline("summarization", ... , local_files_only=True)
+    gen_s2s    = pipeline("text2text-generation", ... , local_files_only=True)
+    qa_pipeline= pipeline("question-answering", ... , local_files_only=True)
+
+
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
+
 # Chargez le modèle spaCy (français ici)
 try:
     nlp = spacy.load("fr_core_news_sm")
