@@ -11,7 +11,3 @@ matplotlib>=3.0.0
 transformers>=4.0.0
 torch>=1.13.0
 spacy>=3.0.0
-fr_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/fr_core_news_sm-3.5.0/fr_core_news_sm-3.5.0.tar.gz
-
-python-dotenv>=1.0.0
-
