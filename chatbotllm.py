@@ -26,12 +26,6 @@ from wordcloud import STOPWORDS
 USE_LOCAL = os.getenv("USE_LOCAL_MODELS", "false").lower() == "true"
 summarizer = gen_s2s = qa_pipeline = None
 
-# … plus bas, dans la section Chatbot …
-if USE_LOCAL:
-    from transformers import pipeline
-    summarizer = pipeline("summarization", ... , local_files_only=True)
-    gen_s2s    = pipeline("text2text-generation", ... , local_files_only=True)
-    qa_pipeline= pipeline("question-answering", ... , local_files_only=True)
 
 
 
@@ -88,7 +82,7 @@ db_client = OpenAI(api_key=OPENAI_API_KEY , timeout=30)
 
 # --- Modèle d'embeddings multilingue ---
 try:
-    embed_model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+    embed_model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2' ,device="cpu")
 except Exception as e:
     st.error(f"❌ Impossible de charger le modèle d'embeddings multilingue : {e}")
     st.stop()
