@@ -175,7 +175,7 @@ elif page == "Visualisation":
         pages = extract_pdf_pages(path)
 
         # Statistiques globales
-        st.subheader("🔢 Statistiques")
+        st.subheader(" Statistiques")
         st.markdown(f"- **Pages** : {len(pages)}")
         if 'chunks' in st.session_state and 'faiss_index' in st.session_state:
             chunks = st.session_state['chunks']
@@ -194,7 +194,7 @@ elif page == "Visualisation":
         cleaned = clean_text(text)
 
         # WordCloud sur le texte nettoyé
-        st.subheader(f"🌥️ WordCloud – Page {num}")
+        st.subheader(f"️ WordCloud – Page {num}")
         wc = WordCloud(
             width=800, height=400,
             background_color="white",
@@ -203,7 +203,7 @@ elif page == "Visualisation":
         st.image(wc.to_array(), use_column_width=True)
 
         # Diagramme en barres sur le texte nettoyé
-        st.subheader("📊 Top 10 mots – Page sélectionnée")
+        st.subheader(" Top 10 mots – Page sélectionnée")
         tokens = cleaned.split()
         freq = Counter(tokens)
         top10 = freq.most_common(10)
@@ -223,7 +223,7 @@ elif page == "Visualisation":
             splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
             chunks = splitter.split_text("\n".join(pages))
             st.session_state['chunks'] = chunks
-            with st.spinner("🔨 Construction de l'index RAG local…"):
+            with st.spinner(" Construction de l'index RAG local…"):
                 embeddings, index = get_embeddings_and_index(path, chunks)
             st.session_state['faiss_index'] = index
             st.success(f"Index RAG prêt ({len(chunks)} chunks)")
@@ -248,7 +248,7 @@ elif page == "Chatbot":
 
             # Si on demande un résumé
             if query.strip().lower().startswith("résumé"):
-                st.info("📝 Génération du résumé en local…")
+                st.info(" Génération du résumé en local…")
                 try:
                     summary = summarizer(
                         context,
@@ -263,7 +263,7 @@ elif page == "Chatbot":
 
             # Sinon, génération locale de réponse
             else:
-                st.info("🤖 Génération de réponse locale…")
+                st.info(" Génération de réponse locale…")
                 try:
                     gen_input = (
                         "Contexte :\n" + context +

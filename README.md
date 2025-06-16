@@ -1,11 +1,11 @@
 # Chat-with-Document : Chatbot PDF & Visualisation
 
 Une application Streamlit qui vous permet de :
-- 🤖 **Dialoguer** avec un document PDF volumineux (question-réponse & résumé)  
-- 🔍 **Explorer** le contenu page par page  
-- 🌥️ **Visualiser** la répartition lexicale via Word Cloud et histogramme  
-- ⚙️ **Indexer** et rechercher le contexte grâce à RAG (Retrieval-Augmented Generation)  
-- 🔄 **Fonctionner 100 % en local** ou basculer sur OpenAI selon quota  
+-  **Dialoguer** avec un document PDF volumineux (question-réponse & résumé)  
+-  **Explorer** le contenu page par page  
+-  **Visualiser** la répartition lexicale via Word Cloud et histogramme  
+-  **Indexer** et rechercher le contexte grâce à RAG (Retrieval-Augmented Generation)  
+-  **Fonctionner 100 % en local** ou basculer sur OpenAI selon quota  
 
 ---
 
