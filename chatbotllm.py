@@ -264,12 +264,44 @@ elif page == "Chatbot":
                 local_files_only=True
             )
         else:
-            summarizer = gen_s2s = qa_pipeline = None
+           # summarizer = gen_s2s = qa_pipeline = None
+           if is_summary:
+                # SMPL : résumé via OpenAI
+                resp = db_client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role":"system","content":"Fais un résumé concis du contexte."},
+                        {"role":"user","content": context}
+                    ],
+                    max_tokens=150,
+                    timeout=30
+                )
+                st.text_area("Résumé", resp.choices[0].message.content, height=200)
 
-        
-        
-        
-        
+            elif is_factual:
+                # Q&A via OpenAI
+                prompt = f"Contexte :\n{context}\n\nQuestion : {query}\nRéponse :"
+                resp = db_client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[{"role":"user","content":prompt}],
+                    max_tokens=150,
+                    timeout=30
+                )
+                st.text_area("Réponse", resp.choices[0].message.content, height=200)
+
+else:
+    # Génération libre via OpenAI
+    prompt = f"Contexte :\n{context}\n\nQuestion : {query}\nRéponse :"
+    resp = db_client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role":"user","content":prompt}],
+        max_tokens=150,
+        timeout=30
+    )
+    st.text_area("Réponse", resp.choices[0].message.content, height=200)
+
+
+       
         
         
         
