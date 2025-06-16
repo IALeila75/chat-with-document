@@ -28,6 +28,8 @@ from wordcloud import STOPWORDS
 from collections import Counter
 
 
+port = int(os.environ.get("PORT", 8501))
+
 USE_LOCAL = os.getenv("USE_LOCAL_MODELS", "false").lower() == "true"
 summarizer = gen_s2s = qa_pipeline = None
 
